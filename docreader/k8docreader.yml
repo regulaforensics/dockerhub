@@ -1,0 +1,74 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  namespace: regula
+  name: regula-docreader
+  labels:
+    app: regula-docreader
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: regula-docreader
+  template:
+    metadata:
+      labels:
+        app: regula-docreader
+    spec:
+      containers:
+      - name: api
+        image: regulaforensics/docreader:5.2.0 # Set requried version TAG here
+        imagePullPolicy: Always
+        env:
+        - name: DOCREADER_BIND
+          value: "0.0.0.0:8080"
+        - name: DOCREADER_BACKLOG
+          value: "20"
+        - name: DOCREADER_WORKERS
+          value: "1"
+        - name: DOCREADER_LOG_LEVEL
+          value: "info"
+        - name: DOCREADER_LOG_FILE
+          value: "-"
+        - name: DOCREADER_ACCESS_LOG_FILE
+          value: "-"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "1"
+          limits:
+            memory: "2Gi"
+            cpu: "2"
+        ports:
+        - name: http
+          containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /api/ping
+            port: 80
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        volumeMounts:
+        - name: license
+          mountPath: /app/extBin/unix_x64/regula.license
+          subPath: regula.license
+      volumes:
+      - name: license
+        secret:
+          secretName: license
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: regula-docreader
+  namespace: regula
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: regula-docreader
+  type: ClusterIP
