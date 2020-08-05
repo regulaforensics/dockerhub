@@ -1,0 +1,79 @@
+version: "3.3"
+
+services:
+
+  db:
+    image: mysql:5.6
+    container_name: mysql-db
+    ports:
+    - "3306:3306"
+    volumes:
+    - sql_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: "regula_db"
+      MYSQL_USER: /run/secrets/db_user
+      MYSQL_ROOT_PASSWORD: /run/secrets/db_root_passwd
+      MYSQL_PASSWORD: /run/secrets/db_user_passwd
+    secrets:
+    - db_user
+    - db_root_passwd
+    - db_user_passwd
+    networks:
+    - face-api-network
+    deploy:
+      mode: replicated
+      replicas: 1
+    restart: on-failure
+
+  app:
+    depends_on:
+    - db
+    ## Replace "TAG" with desired face-api version
+    image: regulaforensics/face-api:latest
+    container_name: face-api
+    ports:
+    - "5000:5000"
+    environment:
+      ###Enable MySQL integration
+      STATELESS="false"
+      ##
+      ###Custom MySQL connection details
+      #SQL_DATABASE: "regula_db"
+      #SQL_USER: "regula"
+      #SQL_PASSWORD: "Regulapasswd#1"
+      #SQL_HOST: "db:3306"
+      ##
+      ###Custom Face-api run details
+      ##FACEAPI_BIND: "0.0.0.0:5000"
+      ##FACEAPI_WORKERS: "1"
+      ##FACEAPI_BACKLOG: "20"
+      ##FACEAPI_LOG_LEVEL: "debug"
+      ##FACEAPI_LOG_FILE: "/app/g.log"
+      ##FACEAPI_ACCESS_LOG_FILE: "-"
+    secrets:
+    - db_user
+    - db_user_passwd
+    networks:
+    - face-api-network
+    deploy:
+      mode: replicated
+      replicas: 1
+    restart: on-failure
+
+    links:
+      - db
+
+networks:
+  face-api-network:
+    driver: bridge
+
+volumes:
+  sql_data:
+
+secrets:
+  db_user:
+    external: true
+  db_root_passwd:
+    external: true
+  db_user_passwd:
+    external: true

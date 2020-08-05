@@ -1,0 +1,85 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  namespace: regula
+  name: regula-face-api
+  labels:
+    app: regula-face-api
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: regula-face-api
+  template:
+    metadata:
+      labels:
+        app: regula-face-api
+    spec:
+      containers:
+      - name: api
+        image: regulaforensics/face-api:preview # Set requried version TAG here
+        imagePullPolicy: Always
+        env:
+        - name: FACEAPI_BIND
+          value: "0.0.0.0:5000"
+        - name: FACEAPI_BACKLOG
+          value: "20"
+        - name: FACEAPI_WORKERS
+          value: "1"
+        - name: FACEAPI_LOG_LEVEL
+          value: "info"
+        - name: FACEAPI_LOG_FILE
+          value: "-"
+        - name: FACEAPI_ACCESS_LOG_FILE
+          value: "-"
+        ###To enable MySQL integration set STATELESS to false
+        #- name: STATELESS
+        #  value: "true"
+        #- name: SQL_USER
+        #  value: "regula"
+        #- name: SQL_PASSWORD
+        #  value: "Regulapasswd#1"
+        #- name: SQL_HOST
+        #  value: "db:3306"
+        #- name: SQL_DB
+        #  value: "regula_db"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "1"
+          limits:
+            memory: "2Gi"
+            cpu: "2"
+        ports:
+        - name: http
+          containerPort: 5000
+        livenessProbe:
+          httpGet:
+            path: /api/ping
+            port: 5000
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        volumeMounts:
+        - name: license
+          mountPath: /app/extBin/unix/cpu/regula.license
+          subPath: regula.license
+      volumes:
+      - name: license
+        secret:
+          secretName: license
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: regula-face-api
+  namespace: regula
+spec:
+  ports:
+  - port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: regula-face-api
+  type: ClusterIP

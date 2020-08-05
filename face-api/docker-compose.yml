@@ -1,0 +1,59 @@
+version: "3.3"
+
+services:
+
+  db:
+    image: mysql:5.6
+    container_name: mysql-db
+    ports:
+    - "3306:3306"
+    volumes:
+    - sql_data:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: "regula_db"
+      MYSQL_USER: "regula"
+      MYSQL_ROOT_PASSWORD: "Regulapasswd#1"
+      MYSQL_PASSWORD: "Regulapasswd#1"
+    networks:
+    - face-api-network
+    restart: on-failure
+
+  app:
+    depends_on:
+    - db
+    ## Replace "TAG" with desired face-api version
+    image: regulaforensics/face-api:preview
+    container_name: face-api
+    ports:
+    - "5000:5000"
+    volumes:
+    - "/home/user/regula.license:/app/extBin/unix/cpu/regula.license" ## path to your regula.license file
+    environment:
+      ###Enable MySQL integration
+      STATELESS="false"
+      ##
+      ###Custom MySQL connection details
+      #SQL_DATABASE: "regula_db"
+      #SQL_USER: "regula"
+      #SQL_PASSWORD: "Regulapasswd#1"
+      #SQL_HOST: "db:3306"
+      ##
+      ###Custom Face-api run details
+      ##FACEAPI_BIND: "0.0.0.0:5000"
+      ##FACEAPI_WORKERS: "1"
+      ##FACEAPI_BACKLOG: "20"
+      ##FACEAPI_LOG_LEVEL: "debug"
+      ##FACEAPI_LOG_FILE: "/app/g.log"
+      ##FACEAPI_ACCESS_LOG_FILE: "-"
+    networks:
+    - face-api-network
+    restart: on-failure
+    links:
+      - db
+
+networks:
+  face-api-network:
+    driver: bridge
+
+volumes:
+  sql_data:
