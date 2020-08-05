@@ -27,7 +27,7 @@ services:
     ports:
     - "5000:5000"
     volumes:
-    - "/home/user/regula.license:/app/extBin/unix/cpu/regula.license" ## path to your regula.license file
+    - "./regula.license:/app/extBin/unix/cpu/regula.license" ## path to your regula.license file
     environment:
       ###Enable MySQL integration
       STATELESS="false"
