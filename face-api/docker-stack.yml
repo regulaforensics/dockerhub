@@ -37,7 +37,7 @@ services:
     - "./regula.license:/app/extBin/unix/cpu/regula.license" ## path to your regula.license file
     environment:
       ###Enable MySQL integration
-      STATELESS="false"
+      STATELESS: "false"
       ##
       ###Custom MySQL connection details
       #SQL_DATABASE: "regula_db"
