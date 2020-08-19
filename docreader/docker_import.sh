@@ -15,7 +15,7 @@ if [ $# -ge 2 ]; then
     exit 1
 fi
 ###Uncomment and remove ") at $AWS_REGION)" to use AWS credentials profile with permission to AWS ECR
-eval $(aws ecr get-login-password --region $AWS_REGION) ## --profile $AWS_PROFILE)
+aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URL
 docker build -t "$REPO_NAME" .
 docker tag "$REPO_NAME":latest "$ECR_URL"/"$REPO_NAME":latest
 docker push "$ECR_URL"/"$REPO_NAME":latest
