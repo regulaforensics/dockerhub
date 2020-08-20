@@ -6,7 +6,7 @@ kubectl create namespace regula
 
 2. Import secret "regula.license"
 ```
-kubectl create secret generic -n regula --from-file=regua.license
+kubectl create secret generic license -n regula --from-file=regua.license
 ```
 
 3. Run deployment
