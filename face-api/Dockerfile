@@ -1,3 +1,7 @@
-## Replace "TAG" with desired face-api version
+## Replace "TAG" with the desired face-api version
 FROM regulaforensics/face-api:TAG
-COPY regula.license /app/extBin/unix/cpu
+
+#CPU version
+COPY regula.license /app/extBin/unix_x64/cpu
+#GPU version
+#COPY regula.license /app/extBin/unix_x64/gpu
