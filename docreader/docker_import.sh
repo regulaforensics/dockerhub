@@ -14,7 +14,7 @@ if [ $# -ge 2 ]; then
     echo $0: usage: $0 REPO_NAME ECR_URL
     exit 1
 fi
-### add --profile to the "aws ecr" command to use the AWS credentials profile withthe permission to access the AWS ECR service
+### add --profile to the "aws ecr" command to use the AWS credentials profile with the permission to access the AWS ECR service
 aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_URL
 docker build -t "$REPO_NAME" .
 docker tag "$REPO_NAME":latest "$ECR_URL"/"$REPO_NAME":latest
