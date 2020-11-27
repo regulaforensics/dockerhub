@@ -77,9 +77,9 @@ metadata:
   namespace: regula
 spec:
   ports:
-  - port: 5000
+  - port: 41101
     protocol: TCP
-    targetPort: 5000
+    targetPort: 41101
   selector:
     app: regula-face-api
   type: ClusterIP
