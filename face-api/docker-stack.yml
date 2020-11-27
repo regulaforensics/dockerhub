@@ -32,7 +32,7 @@ services:
     image: regulaforensics/face-api:latest
     container_name: face-api
     ports:
-    - "5000:5000"
+    - "41101:41101"
     volumes:
     - "./regula.license:/app/extBin/unix/cpu/regula.license" ## path to your regula.license file
     environment:
