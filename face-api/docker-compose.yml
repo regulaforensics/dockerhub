@@ -39,7 +39,7 @@ services:
       #SQL_HOST: "db:3306"
       ##
       ###Custom Face-api run details
-      ##FACEAPI_BIND: "0.0.0.0:5000"
+      ##FACEAPI_BIND: "0.0.0.0:41101"
       ##FACEAPI_WORKERS: "1"
       ##FACEAPI_BACKLOG: "20"
       ##FACEAPI_LOG_LEVEL: "debug"
