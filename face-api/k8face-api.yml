@@ -22,7 +22,7 @@ spec:
         imagePullPolicy: Always
         env:
         - name: FACEAPI_BIND
-          value: "0.0.0.0:5000"
+          value: "0.0.0.0:41101"
         - name: FACEAPI_BACKLOG
           value: "20"
         - name: FACEAPI_WORKERS
@@ -53,11 +53,11 @@ spec:
             cpu: "2"
         ports:
         - name: http
-          containerPort: 5000
+          containerPort: 41101
         livenessProbe:
           httpGet:
             path: /api/ping
-            port: 5000
+            port: 41101
           initialDelaySeconds: 20
           periodSeconds: 10
         volumeMounts:
