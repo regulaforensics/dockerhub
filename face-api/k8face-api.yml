@@ -62,7 +62,7 @@ spec:
           periodSeconds: 10
         volumeMounts:
         - name: license
-          mountPath: /app/extBin/unix/cpu/regula.license
+          mountPath: /app/extBin/unix_x64/cpu/regula.license
           subPath: regula.license
       volumes:
       - name: license
