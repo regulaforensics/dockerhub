@@ -22,7 +22,7 @@ services:
     depends_on:
     - db
     ## Replace "TAG" with desired face-api version
-    image: regulaforensics/face-api:preview
+    image: regulaforensics/face-api:latest
     container_name: face-api
     ports:
     - "41101:41101"
