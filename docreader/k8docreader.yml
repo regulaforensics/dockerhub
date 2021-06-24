@@ -28,16 +28,36 @@ spec:
           value: "20"                             ## Default value
         - name: DOCREADER_WORKERS
           value: "1"                              ## Default value
-        - name: DOCREADER_LOG_LEVEL
-          value: "info"                           ## Default value
-        - name: DOCREADER_LOG_FILE
-          value: "-"                              ## Default value
-        - name: DOCREADER_ACCESS_LOG_FILE
-          value: "-"                              ## Default value
-        #- name: DOCREADER_LIC_URL
-        #  value: "https://path/to/secure/storage/regula.license" ## I.e. secured S3
         - name: DOCREADER_ENABLE_DEMO_WEB_APP
           value: "true"                           ## Default value
+        #- name: DOCREADER_LIC_URL
+        #  value: "https://path/to/secure/storage/regula.license" ## Secured web storage to download license from (E.g. secured S3)
+
+        ## Logging
+        - name: DOCREADER_LOGS_LEVEL
+          value: "info"                           ## Default value
+        - name: DOCREADER_LOGS_FORMATTER
+          value: "text"                              ## Default value
+
+        ## Access logs
+        - name: DOCREADER_LOGS_ACCESS_CONSOLE
+          value: "true"                          ## Default value
+        - name: DOCREADER_LOGS_ACCESS_FILE
+          value: "false"                          ## Default value
+        #- name: LOGS_ACCESS_FILE_PATH
+        #  value: "/app/logs/document-reader-access.log"        ## Uncomment if DOCREADER_LOGS_ACCESS_FILE is "true"
+
+        ## App logs
+        - name: DOCREADER_LOGS_APP_CONSOLE
+          value: "true"                           ## Default value
+        - name: DOCREADER_LOGS_APP_FILE
+          value: "false"                          ## Default value
+        #- name: DOCREADER_LOGS_APP_FILE_PATH
+        #  value: "/app/logs/document-reader-app.log"            ## Uncomment if DOCREADER_LOGS_APP_FILE is "true"
+
+        ## LOGS. Uncomment if you require to save processed results
+        #- name: DOCREADER_PROCESS_RESULTS_LOG_PATH
+        #  value: "/app/logs"
 
         ## HTTPS.
         ## We recommend to terminate ssl traffic at the Ingress
@@ -50,13 +70,9 @@ spec:
         - name: DOCREADER_CORS_ORIGINS
           value: "*"                                            ## Default value
         - name: DOCREADER_CORS_METHODS
-          value: "*"                                            ## Default value
-        - name: DOCREADER_CORS_HEADERS
           value: "GET, HEAD, POST, OPTIONS, PUT, PATCH, DELETE" ## Default value
-
-        ## LOGS. Uncomment if you require to save processed results
-        #- name: DOCREADER_PROCESS_RESULTS_LOG_PATH
-        #  value: "/app/logs"
+        - name: DOCREADER_CORS_HEADERS
+          value: "*"                                            ## Default value
 
         ## Resources and Limits. Each worker requires 1 cpu/2Gb memory, this SumCPU = Nworkers * 1 cpu; SumMemory = Nworkers * 2Gb
         resources:
