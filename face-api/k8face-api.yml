@@ -103,7 +103,7 @@ spec:
         - name: FACEAPI_CORS_HEADERS
           value: "*"                                            ## Default value
 
-        ## Resources and Limits. Each worker requires 1 cpu/2Gb memory, this SumCPU = Nworkers * 1 cpu; SumMemory = Nworkers * 2Gb
+        ## Resources and Limits. Each worker requires 1 cpu/2Gb memory, this SumCPU = Nworkers * 1 cpu; SumMemory = Nworkers * 3Gb
         resources:
           requests:
             memory: "3Gi"
