@@ -7,7 +7,7 @@ metadata:
     app: regula-face-api
 
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: regula-face-api
@@ -17,59 +17,150 @@ spec:
         app: regula-face-api
     spec:
       containers:
-      - name: api
-        image: regulaforensics/face-api:latest # Set requried version TAG here
+      ## Uncomment to enable Identification mode
+      #- name: db
+      #  image: mysql:5.6
+      #  env:
+      #  - name: MYSQL_DATABASE
+      #    value: "regula_db"
+      #  - name: MYSQL_USER
+      #    value: "regula"
+      #  - name: MYSQL_ROOT_PASSWORD
+      #    value: "Regulapasswd#1"
+      #  - name: MYSQL_PASSWORD
+      #    value: "Regulapasswd#1"
+      #  ports:
+      #  - name: mysql
+      #    containerPort: 3306
+      #    protocol: TCP
+      - name: faceapi
+        image: regulaforensics/face-api:nightly-cpu             ## Set requried version TAG here
         imagePullPolicy: Always
         env:
+        ## General settings
         - name: FACEAPI_BIND
-          value: "0.0.0.0:41101"
+          value: "0.0.0.0:41101"                                ## Default value
         - name: FACEAPI_BACKLOG
-          value: "20"
+          value: "20"                                           ## Default value
         - name: FACEAPI_WORKERS
-          value: "1"
-        - name: FACEAPI_LOG_LEVEL
-          value: "info"
-        - name: FACEAPI_LOG_FILE
-          value: "-"
-        - name: FACEAPI_ACCESS_LOG_FILE
-          value: "-"
-        ###To enable MySQL integration set STATELESS to false
-        #- name: STATELESS
-        #  value: "true"
-        #- name: SQL_USER
+          value: "1"                                            ## Default value
+        - name: FACEAPI_ENABLE_DEMO_WEB_APP
+          value: "true"                                         ## Default value
+        #- name: FACEAPI_LIC_URL
+        #  value: "https://path/to/webstorage/regula.license"   ## Secured web storage to download license from (E.g. secured S3)
+
+        ## To enable Identification mode set FACEAPI_ENABLE_IDENTIFICATION to true
+        ## MySQL DB should be ready befor the container start
+        #- name: FACEAPI_ENABLE_IDENTIFICATION
+        #  value: "false"
+        #- name: FACEAPI_SQL_USER
         #  value: "regula"
-        #- name: SQL_PASSWORD
+        #- name: FACEAPI_SQL_PASSWORD
         #  value: "Regulapasswd#1"
-        #- name: SQL_HOST
+        #- name: FACEAPI_SQL_HOST
         #  value: "db:3306"
-        #- name: SQL_DB
+        #- name: FACEAPI_SQL_DB
         #  value: "regula_db"
+
+        ## Logging
+        - name: FACEAPI_LOGS_LEVEL
+          value: "info"                                         ## Default value
+        - name: FACEAPI_LOGS_FORMATTER
+          value: "text"                                         ## Default value
+
+        ## Access logs
+        - name: FACEAPI_LOGS_ACCESS_CONSOLE
+          value: "true"                                         ## Default value
+        - name: FACEAPI_LOGS_ACCESS_FILE
+          value: "false"                                        ## Default value
+        - name: LOGS_ACCESS_FILE_PATH
+          value: "/app/logs/access/facesdk-access.log"          ## Default value
+
+        ## App logs
+        - name: FACEAPI_LOGS_APP_CONSOLE
+          value: "true"                                         ## Default value
+        - name: FACEAPI_LOGS_APP_FILE
+          value: "false"                                        ## Default value
+        - name: FACEAPI_LOGS_APP_FILE_PATH
+          value: "/app/logs/app/facesdk-app.log"                ## Default value
+
+        ## Result logs. Uncomment if you require to save processed results
+        #- name: FACEAPI_PROCESS_RESULTS_LOG_PATH
+        #  value: "/app/logs"
+
+        ## HTTPS.
+        ## We recommend to terminate ssl traffic at the Ingress
+        #- name: FACEAPI_CERT_FILE
+        #  value: "/path/to/your/crt/file"
+        #- name: FACEAPI_KEY_FILE
+        #  value: "/path/to/your/key/file"
+
+        ## CORS
+        - name: FACEAPI_CORS_ORIGINS
+          value: "*"                                            ## Default value
+        - name: FACEAPI_CORS_METHODS
+          value: "GET, HEAD, POST, OPTIONS, PUT, PATCH, DELETE" ## Default value
+        - name: FACEAPI_CORS_HEADERS
+          value: "*"                                            ## Default value
+
+        ## Resources and Limits. Each worker requires 1 cpu/2Gb memory, this SumCPU = Nworkers * 1 cpu; SumMemory = Nworkers * 3Gb
         resources:
           requests:
-            memory: "1Gi"
+            memory: "3Gi"
             cpu: "1"
           limits:
-            memory: "2.5Gi"
-            cpu: "2"
+            memory: "3Gi"
+            cpu: "1"
         ports:
         - name: http
           containerPort: 41101
-        livenessProbe:
+        readinessProbe:
           httpGet:
             path: /api/ping
-            port: 41101
+            port: http
           initialDelaySeconds: 20
-          periodSeconds: 10
+          periodSeconds: 20
         volumeMounts:
         - name: license
           mountPath: /app/extBin/unix_x64/cpu/regula.license
           subPath: regula.license
+      ## Result logs. Uncomment if you require to save processed results
+      #  - name: logs
+      #    mountPath: /app/logs
+      ## Result logs. Uncomment if you require to save processed results
+      ##initContainers:
+      #- name: init-logs
+      #  image: busybox:1.33
+      #  command: ['sh', '-c', 'chmod g+wx /app/logs', 'chgrp root /app/logs' ]
+      #  volumeMounts:
+      #  - name: logs
+      #    mountPath: /app/logs
       volumes:
       - name: license
         secret:
           secretName: license
+      ## Result logs. Uncomment and change volume type if you require to save processed results
+      #- name: logs
+      #  emptyDir: {}
 ---
+## Prerequisits - Metrics Server https://kubernetes.io/docs/tasks/debug-application-cluster/resource-metrics-pipeline/#metrics-server
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  namespace: regula
+  name: regula-face-api
+  labels:
+    app: regula-face-api
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: regula-face-api
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 150
 
+---
 apiVersion: v1
 kind: Service
 metadata:
