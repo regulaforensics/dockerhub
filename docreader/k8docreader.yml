@@ -18,53 +18,52 @@ spec:
     spec:
       containers:
       - name: api
-        image: regulaforensics/docreader:latest # Set requried version TAG here
+        image: regulaforensics/docreader:latest                 ## Set requried version TAG here
         imagePullPolicy: Always
         env:
         ## General settings
         - name: DOCREADER_BIND
-          value: "0.0.0.0:8080"                   ## Default value
+          value: "0.0.0.0:8080"                                 ## Default value
         - name: DOCREADER_BACKLOG
-          value: "20"                             ## Default value
+          value: "20"                                           ## Default value
         - name: DOCREADER_WORKERS
-          value: "1"                              ## Default value
+          value: "1"                                            ## Default value
         - name: DOCREADER_ENABLE_DEMO_WEB_APP
-          value: "true"                           ## Default value
+          value: "true"                                         ## Default value
         #- name: DOCREADER_LIC_URL
-        #  value: "https://path/to/secure/storage/regula.license" ## Secured web storage to download license from (E.g. secured S3)
+        #  value: "https://path/to/webstorage/regula.license"   ## Secured web storage to download license from (E.g. secured S3)
 
         ## Logging
         - name: DOCREADER_LOGS_LEVEL
-          value: "info"                           ## Default value
+          value: "info"                                         ## Default value
         - name: DOCREADER_LOGS_FORMATTER
-          value: "text"                              ## Default value
+          value: "text"                                         ## Default value
 
         ## Access logs
         - name: DOCREADER_LOGS_ACCESS_CONSOLE
-          value: "true"                          ## Default value
+          value: "true"                                         ## Default value
         - name: DOCREADER_LOGS_ACCESS_FILE
-          value: "false"                          ## Default value
-        #- name: LOGS_ACCESS_FILE_PATH
-        #  value: "/app/logs/document-reader-access.log"        ## Uncomment if DOCREADER_LOGS_ACCESS_FILE is "true"
+          value: "false"                                        ## Default value
+        - name: LOGS_ACCESS_FILE_PATH
+          value: "/app/logs/access/document-reader-access.log"  ## Default value
 
         ## App logs
         - name: DOCREADER_LOGS_APP_CONSOLE
-          value: "true"                           ## Default value
+          value: "true"                                         ## Default value
         - name: DOCREADER_LOGS_APP_FILE
-          value: "false"                          ## Default value
-        #- name: DOCREADER_LOGS_APP_FILE_PATH
-        #  value: "/app/logs/document-reader-app.log"            ## Uncomment if DOCREADER_LOGS_APP_FILE is "true"
+          value: "false"                                        ## Default value
+        - name: DOCREADER_LOGS_APP_FILE_PATH
+          value: "/app/logs/app/document-reader-app.log"        ## Default value
 
-        ## LOGS. Uncomment if you require to save processed results
+        ## Result logs. Uncomment all "Result logs" blocks if you require to save processed results
         #- name: DOCREADER_PROCESS_RESULTS_LOG_PATH
         #  value: "/app/logs"
+        #- name: DOCREADER_LOGS_PROCESS_SAVE_RESULT
+        #  value: "true"                                        ## Deafult. Optional. Uncomment if DOCREADER_LOGS_PROCESS_SAVE_RESULT is set
 
-        ## HTTPS.
-        ## We recommend to terminate ssl traffic at the Ingress
-        #- name: DOCREADER_CERT_FILE
-        #  value: "/path/to/your/crt/file"
-        #- name: DOCREADER_KEY_FILE
-        #  value: "/path/to/your/key/file"
+        ## RFID PKD. Uncomment if you require RFID PKD PA validation.
+        #- name: RFID_PKD_PA_PATH
+        #  value: "/app/rfid_pkd"
 
         ## CORS
         - name: DOCREADER_CORS_ORIGINS
@@ -73,6 +72,13 @@ spec:
           value: "GET, HEAD, POST, OPTIONS, PUT, PATCH, DELETE" ## Default value
         - name: DOCREADER_CORS_HEADERS
           value: "*"                                            ## Default value
+
+        ## HTTPS.
+        ## We recommend to terminate ssl traffic at the Ingress
+        #- name: DOCREADER_CERT_FILE
+        #  value: "/path/to/your/crt/file"
+        #- name: DOCREADER_KEY_FILE
+        #  value: "/path/to/your/key/file"
 
         ## Resources and Limits. Each worker requires 1 cpu/2Gb memory, this SumCPU = Nworkers * 1 cpu; SumMemory = Nworkers * 2Gb
         resources:
@@ -90,16 +96,19 @@ spec:
             path: /api/ping
             port: http
           initialDelaySeconds: 5
-          periodSeconds: 5
+          periodSeconds: 20
         volumeMounts:
         - name: license
           mountPath: /app/extBin/unix_x64/regula.license
           subPath: regula.license
-      ## LOGS. Uncomment if you require to save processed results
+      ## Result logs. Uncomment if you require to save processed results
       #  - name: logs
       #    mountPath: /app/logs
-      ## LOGS. Uncomment if you require to save processed results
-      ##initContainers:
+      ## RFID PKD. Uncomment if you require mount RFID PKD certificates
+      #  - name: rfid
+      #    mountPath: /app/rfid_pkd
+      ## Result logs. Uncomment initContainer block if you require to save processed results
+      #initContainers:
       #- name: init-logs
       #  image: busybox:1.33
       #  command: ['sh', '-c', 'chmod g+wx /app/logs', 'chgrp root /app/logs' ]
@@ -110,8 +119,11 @@ spec:
       - name: license
         secret:
           secretName: license
-      ## LOGS. Uncomment and change volume type if you require to save processed results
+      ## Result logs. Uncomment and change volume type if you require to save processed results
       #- name: logs
+      #  emptyDir: {}
+      ## RFID. Volume with RFID PKD certifcates
+      #- name: rfid
       #  emptyDir: {}
 ---
 ## Prerequisits - Metrics Server https://kubernetes.io/docs/tasks/debug-application-cluster/resource-metrics-pipeline/#metrics-server
