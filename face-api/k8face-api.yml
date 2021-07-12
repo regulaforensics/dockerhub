@@ -58,7 +58,7 @@ spec:
         #- name: FACEAPI_SQL_PASSWORD
         #  value: "Regulapasswd#1"
         #- name: FACEAPI_SQL_HOST
-        #  value: "db:3306"
+        #  value: "127.0.0.1:3306"
         #- name: FACEAPI_SQL_DB
         #  value: "regula_db"
 
